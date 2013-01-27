@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+some_func() {
+  true
+  false
+}
+
+some_func
+echo $?
+
+set -e
+
+if ! some_func ; then
+  echo YAY
+fi
