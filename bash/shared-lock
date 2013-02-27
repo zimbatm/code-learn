@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+set -e
+DEPLOY_ID=`date +%s`
+
+fail() {
+  echo "$DEPLOY_ID: $@" >&2
+  exit 1
+}
+
+log() {
+  echo "$DEPLOY_ID: $@"
+}
+
+has() {
+  which $1 >/dev/null 2>&1
+}
+
+lock() {
+  local filename=$1
+  if has flock ; then
+    touch $filename
+    exec 200<$filename
+    flock -n -e 200
+  else # OSX
+    shlock -p $$ -f $filename
+  fi
+}
+
+log deploying
+
+# `flock` is not available in OSX
+lock /tmp/deploy.lock || fail "Another deploy is already running"
+
+log lock acquired
+sleep 10
+
+log "deploy done"
+rm /tmp/deploy.lock
